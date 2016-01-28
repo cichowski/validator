@@ -1,0 +1,25 @@
+{
+    "name": "cichowski/validator",
+    "description": "Extended laravel validator",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dariusz Cichowski",
+            "email": "dariusz.cichowski@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "laravel/framework": ">=5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Cichowski\\Validator\\": "src"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1-dev"
+        }
+    }    
+}
