@@ -1,4 +1,5 @@
-<?php namespace Cichowski\Validator;
+<?php
+namespace Cichowski\Validator;
 
 use Illuminate\Support\ServiceProvider;
 

@@ -1,41 +1,38 @@
 <?php namespace Cichowski\Validator\Validators;
 
 use Cichowski\Validator\BaseValidator;
+use Cichowski\Validator\Contracts\LaravelValidator;
 
-class Regon extends BaseValidator
+class Regon extends BaseValidator implements LaravelValidator
 {
+    private const VALIDATION_WEIGHTS_9 = [8, 9, 2, 3, 4, 5, 6, 7];
+    private const VALIDATION_WEIGHTS_14 = [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8];
+
     public function validate($attribute, $value, array $parameters, $validator)
     {        
-        if ($this->isDigit($value)) {
-            
-            if (strlen($value) == 9) {
-                            
+        if ( ! $this->isDigit($value)) {
+            return false;
+        }
+
+        switch (strlen($value)) {
+            case 9:
                 return $this->validateRegon9($value);
-            }
-            elseif(strlen($value) == 14) {
-                
-                if ($this->validateRegon9(substr($value, 0, 9))) {                
-                    
-                    return $this->validateRegon14($value);            
-                }
-            }      
-        }                 
-        
-        return false;        
+            case 14:
+                return $this->validateRegon9(substr($value, 0, 9))
+                    && $this->validateRegon14($value);
+            default:
+                return false;
+        }
     }    
     
     private function validateRegon9($value)
     {
-        $weights = array(8, 9, 2, 3, 4, 5, 6, 7);
-
-        return $this->checkSum($value, $weights, 11, 'mod10', false);        
+        return $this->checkSum($value, self::VALIDATION_WEIGHTS_9, 11, 'mod10');
     }
     
     private function validateRegon14($value)
     {
-        $weights = array(2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8);
-
-        return $this->checkSum($value, $weights, 11, 'mod10', false);         
+        return $this->checkSum($value, self::VALIDATION_WEIGHTS_14, 11, 'mod10');
     }
 }
 

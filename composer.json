@@ -21,5 +21,13 @@
         "branch-alias": {
             "dev-master": "0.1-dev"
         }
-    }    
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cichowski\\Tests\\": "tests"
+        }
+    }
 }

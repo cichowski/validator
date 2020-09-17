@@ -2,20 +2,24 @@
 
 use Cichowski\Validator\BaseValidator;
 use Carbon\Carbon;
+use Cichowski\Validator\Contracts\LaravelValidator;
+use Exception;
+use InvalidArgumentException;
+use RuntimeException;
 
-class Pesel extends BaseValidator
+class Pesel extends BaseValidator implements LaravelValidator
 {   
     /**
      * Date of birth retrieved from PESEL number
      * 
-     * @var Carbon\Carbon 
+     * @var Carbon
      */
     private $date;
     
     /**
      * Date of birth provided by $parameters in format acceptable by Carbon (and transformed into Carbon)
      * 
-     * @var Carbon\Carbon
+     * @var Carbon
      */
     private $dateToConfront;
     
@@ -32,13 +36,13 @@ class Pesel extends BaseValidator
     {   
         $this->setParameters($parameters);               
         
-        if ($this->isDigit($value) and strlen($value) == 11) {
+        if ($this->isDigit($value) && strlen($value) === 11) {
             
-            $weights = array(1, 3, 7, 9, 1, 3, 7, 9, 1, 3);
+            $weights = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
             
             $genderDigit = (int)substr($value, 9, 1);           
 
-            return  $this->checkSum($value, $weights, 10) and
+            return  $this->checkSum($value, $weights, 10, 'invert') and
                     $this->checkDateOfBirth($value) and
                     $this->confrontDateOfBirth() and
                     $this->confrontGender($genderDigit);
@@ -67,14 +71,14 @@ class Pesel extends BaseValidator
                 $date = new Carbon($value);
                 
                 return $this->dateToConfront = $date;
-                
-            } catch (\Exception $ex) { 
-                
-                //do nothing, Exception is thrown anyway if value is not recognized
-            }                        
-        } 
-        
-        throw new \InvalidArgumentException('Unknown parameter passed to PESEL validator.');
+
+            } catch (Exception $ex) {
+
+                throw new InvalidArgumentException('Unable to read provided date of birth.');
+            }
+        }
+
+        throw new InvalidArgumentException('Unknown parameter passed to PESEL validator.');
     }
     
     private function checkDateOfBirth($pesel)
@@ -90,12 +94,12 @@ class Pesel extends BaseValidator
             return false;
         }
         
-        $this->date = Carbon::create($year, $month, $day, 0, 0, 0);        
+        $this->date = Carbon::create($year, $month, $day);
         
         return true;
     }    
     
-    private function getCenturyFromMonthDigits($monthDigits)
+    private function getCenturyFromMonthDigits(int $monthDigits): int
     {       
         switch (floor($monthDigits / 20)) {
             
@@ -110,23 +114,27 @@ class Pesel extends BaseValidator
             case 4:
                 return 18;
         }
+
+        throw new RuntimeException('Problem with date of birth calculation occurred.');
     }
     
-    private function confrontDateOfBirth()
+    private function confrontDateOfBirth(): bool
     {         
         if (isset($this->dateToConfront)) {
             
             return $this->date->diffInDays($this->dateToConfront) == 0;
         }
+
         return true;
     }
     
-    private function confrontGender($genderDigit)
+    private function confrontGender(int $genderDigit): bool
     {        
         if (isset($this->genderToConfront)) {
             
             return ($genderDigit % 2) == ($this->genderToConfront % 2);
         }
+
         return true;
     }
 }
